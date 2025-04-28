@@ -1,8 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
-const { VueLoaderPlugin } = require('vue-loader');
+const {VueLoaderPlugin} = require('vue-loader');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { UserscriptPlugin } = require('webpack-userscript');
+const {UserscriptPlugin} = require('webpack-userscript');
 
 const isProduction = process.env.NODE_ENV === 'production';
 console.log('Is production mode:', isProduction);
@@ -19,8 +19,8 @@ module.exports = {
 
   module: {
     rules: [
-      { test: /\.vue$/, loader: 'vue-loader' },
-      { test: /\.js$/, use: 'babel-loader', exclude: /node_modules/ },
+      {test: /\.vue$/, loader: 'vue-loader'},
+      {test: /\.js$/, use: 'babel-loader', exclude: /node_modules/},
       {
         test: /\.css$/,
         use: ['vue-style-loader', 'css-loader']
@@ -29,9 +29,9 @@ module.exports = {
         test: /\.(png|jpe?g|gif|svg|woff2?|eot|ttf|otf)$/,
         type: 'asset',
         parser: {
-          dataUrlCondition: { maxSize: 1000 }
+          dataUrlCondition: {maxSize: 1000}
         },
-        generator: { filename: '[name][ext]' }
+        generator: {filename: '[name][ext]'}
       }
     ]
   },
@@ -54,7 +54,7 @@ module.exports = {
     open: true
   },
 
-  performance: { hints: false },
+  performance: {hints: false},
 
   plugins: [
     new VueLoaderPlugin(),
@@ -67,14 +67,16 @@ module.exports = {
       __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: JSON.stringify(false)
     }),
 
-    // 调试用HTML，只插入我们想要的build.user.js
-    new HtmlWebpackPlugin({
-      template: './index.html',
-      scriptLoading: 'defer',
-      filename: 'index.html',
-      inject: 'body',
-      chunks: 'all',  // 默认就all，保险起见写一下
-    }),
+    // 调试用HTML，只插入我们想要的build.user.js,但是打包的时候不需要index.html
+    ...(isProduction ? [] : [
+      new HtmlWebpackPlugin({
+        template: './index.html',
+        scriptLoading: 'defer',
+        filename: 'index.html',
+        inject: 'body',
+        chunks: 'all',
+      }),
+    ]),
 
     // 只有生产模式才打油猴脚本
     ...(isProduction ? [new UserscriptPlugin({
@@ -86,6 +88,8 @@ module.exports = {
         match: ['https://*/*'],
         grant: 'none'
       },
+      // 不需要生存meta.js
+      metajs: false,
     })] : []),
   ],
 
